@@ -1,30 +1,39 @@
-﻿using BepInEx;
+using BepInEx;
 using System;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 namespace SubscribeBoard
 {
-    [BepInPlugin(PluginInfo.GUID, PluginInfo.Name, PluginInfo.Version)]
-    public class Plugin : BaseUnityPlugin
+    public class SubscribeBoardPlugin : BaseUnityPlugin // Renamed from Plugin to SubscribeBoardPlugin
     {
-        AssetBundle bundle;
+        private AssetBundle assetBundle;
 
-        void Start()
+        // Initialize method to load the asset bundle and spawn the object
+        void Awake()
         {
-            Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("SubscribeBoard.res.subscribes");
-            bundle = AssetBundle.LoadFromStream(stream);
-            if (stream == null)
+            try
             {
-                Debug.LogError("STREAM IS NULL. NOT LOADING ASSETS");
-            }
-            stream.Close();
+                using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("SubscribeBoard.res.subscribes"))
+                {
+                    if (stream == null)
+                    {
+                        Debug.LogError("Failed to load resource stream. Please make an issue, as gabora helped me write this.");
+                        return;
+                    }
 
-            GameObject untitled0 = Instantiate(bundle.LoadAsset<GameObject>("SubscribeBoard"));
-            untitled0.transform.position = new Vector3(-62.732f, 12.9482f, -83.786f);
-            untitled0.transform.rotation = Quaternion.Euler(0, 96, 0);
+                    assetBundle = AssetBundle.LoadFromStream(stream);
+                }
+
+                GameObject subscribeBoard = Instantiate(assetBundle.LoadAsset<GameObject>("SubscribeBoard"));
+                subscribeBoard.transform.position = new Vector3(-62.732f, 12.9482f, -83.786f);
+                subscribeBoard.transform.rotation = Quaternion.Euler(0, 96, 0);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"An error occurred while loading the asset bundle: {ex.Message}");
+            }
         }
     }
 }
